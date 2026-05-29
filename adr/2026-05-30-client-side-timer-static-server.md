@@ -1,7 +1,7 @@
 ---
 title: Client-side timer logic, Python stdlib serves static files only
 date: 2026-05-30
-status: Proposed
+status: Accepted
 supersedes:
 superseded-by:
 ---

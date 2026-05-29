@@ -162,7 +162,24 @@
 
   // Advance fake clock to just after endsAt
   fakeNow = s.endsAt + 50;
+
+  // Capture announcement text during transition: Work completes → Short Break next.
+  // Uses a synthetic announce element so signalTransition() can write to it.
+  var announceEl = document.createElement('div');
+  announceEl.id = 'status-announce';
+  document.body.appendChild(announceEl);
+
   P.tick(); // should call completeInterval exactly once and flip phase to 'idle'
+
+  var announcedText = announceEl.textContent;
+  assert(
+    'Transition announcement: completed label differs from next label',
+    announcedText.indexOf('Work — interval complete.') === 0 &&
+    announcedText.indexOf('Short Break starting next.') !== -1,
+    'got: "' + announcedText + '"'
+  );
+
+  document.body.removeChild(announceEl);
 
   var sAfter = P.getState();
   assert('Exactly-once: phase not running after tick at zero', sAfter.phase !== 'running', 'phase=' + sAfter.phase);

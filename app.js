@@ -87,15 +87,11 @@
   }
 
   // skip() reuses the same nextInterval path as natural completion, so a skipped
-  // Work interval still advances workCount (FR-11). Guard flag prevents double-fire
-  // from rapid input within the same JS task.
-  var _skipInProgress = false;
+  // Work interval still advances workCount (FR-11). The phase guard in
+  // completeInterval() (sets phase='idle') prevents double-fire from rapid input.
   function skip() {
     if (state.phase === 'idle') { return; }
-    if (_skipInProgress) { return; }
-    _skipInProgress = true;
     completeInterval();
-    _skipInProgress = false;
   }
 
   function reset() {
@@ -157,11 +153,12 @@
   // Audio: short beep via AudioContext oscillator; best-effort, never required.
   // Accessible: aria-live region on #interval-type + assertive announce region.
   function signalTransition() {
-    var next  = nextInterval(state.intervalKind, state.workCount);
-    var label = intervalLabel(next.intervalKind);
-    var announceEl = document.getElementById('status-announce');
+    var completedLabel = intervalLabel(state.intervalKind);
+    var next           = nextInterval(state.intervalKind, state.workCount);
+    var nextLabel      = intervalLabel(next.intervalKind);
+    var announceEl     = document.getElementById('status-announce');
     if (announceEl) {
-      announceEl.textContent = label + ' — interval complete. ' + label + ' starting next.';
+      announceEl.textContent = completedLabel + ' — interval complete. ' + nextLabel + ' starting next.';
     }
     playBeep();
   }

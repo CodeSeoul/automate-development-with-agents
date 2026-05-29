@@ -7,7 +7,6 @@ server holds no timer state and exposes no API — all logic is client-side.
 
 import http.server
 import os
-import sys
 
 
 class PomodoroHandler(http.server.SimpleHTTPRequestHandler):
@@ -23,10 +22,6 @@ class PomodoroHandler(http.server.SimpleHTTPRequestHandler):
         # Prevent a stale asset being shown after an edit during the workshop.
         self.send_header("Cache-Control", "no-store")
         super().end_headers()
-
-    def log_message(self, format, *args):  # noqa: A002
-        # Keep the default access log; suppress only by not overriding.
-        super().log_message(format, *args)
 
 
 def main():
