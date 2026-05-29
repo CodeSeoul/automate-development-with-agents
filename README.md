@@ -1,5 +1,41 @@
 # Automate Development with Agents
 
+## Pomodoro Timer — Quick Start
+
+A Pomodoro timer built as a live workshop demo. Runs with a single command; no
+packages, no build step, no database.
+
+### Run
+
+```bash
+python3 server.py
+```
+
+Open the printed URL (`http://127.0.0.1:8000/`) in any browser. Use a different port
+with the `PORT` environment variable: `PORT=9000 python3 server.py`.
+
+### Controls
+
+| Button | Action |
+|--------|--------|
+| **Start** | Begin the current interval (25 min Work to start). |
+| **Pause** | Freeze the timer mid-interval. |
+| **Resume** | Continue from where it was paused (Start button re-labels itself). |
+| **Skip** | End the current interval immediately and advance to the next. |
+| **Reset** | Return to idle Work interval 1 / 25:00 from any state. |
+
+The cycle runs Work → Short Break, four times, with the fourth Short Break replaced by a
+Long Break (the classic 25/5/15 Pomodoro). Each new interval waits for you to press
+Start rather than auto-advancing, which keeps live demos predictable.
+
+### Tests
+
+Open `tests/test_cycle.html` directly in a browser (no server needed) to run the
+pure-logic unit tests for the cycle sequence, skip rules, and wall-clock timing seam.
+
+---
+
+
 A template repository for an agentic development workshop. It ships a complete,
 opinionated **multi-agent development pipeline** for Claude Code — a coordinating
 orchestrator, specialized subagents, file-based artifact handoff, and deterministic

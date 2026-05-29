@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pomodoro — Cycle Logic Tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
+    h1   { font-size: 1.4rem; margin-bottom: 1rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem 0.7rem; text-align: left; }
+    th { background: #f4f4f4; }
+    .pass { color: #1a7a1a; font-weight: bold; }
+    .fail { color: #b00020; font-weight: bold; }
+    #summary { margin-top: 1rem; font-size: 1rem; }
+    #summary.all-pass { color: #1a7a1a; }
+    #summary.has-fail  { color: #b00020; }
+  </style>
+</head>
+<body>
+<h1>Pomodoro — Pure-Logic Tests</h1>
+<p>Tests run automatically on load. No npm, no build step required.</p>
+
+<table>
+  <thead><tr><th>Test</th><th>Result</th><th>Details</th></tr></thead>
+  <tbody id="results"></tbody>
+</table>
+<div id="summary"></div>
+
+<!--
+  Load app.js from the parent directory. The script exposes window.Pomodoro
+  so we can call pure helpers without a module bundler.
+-->
+<script src="../app.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var pass = 0;
+  var fail = 0;
+  var tbody = document.getElementById('results');
+
+  function assert(name, condition, detail) {
+    var tr = document.createElement('tr');
+    var tdName   = document.createElement('td');
+    var tdResult = document.createElement('td');
+    var tdDetail = document.createElement('td');
+    tdName.textContent   = name;
+    tdResult.className   = condition ? 'pass' : 'fail';
+    tdResult.textContent = condition ? 'PASS' : 'FAIL';
+    tdDetail.textContent = detail || '';
+    tr.appendChild(tdName);
+    tr.appendChild(tdResult);
+    tr.appendChild(tdDetail);
+    tbody.appendChild(tr);
+    if (condition) { pass++; } else { fail++; }
+    if (!condition) { console.error('FAIL:', name, detail); }
+  }
+
+  var P = window.Pomodoro;
+  var ni = P.nextInterval;
+  var fmt = P.formatMMSS;
+
+  // ── formatMMSS ──────────────────────────────────────────────────────────────
+
+  assert('formatMMSS: 25:00',  fmt(1500000) === '25:00',  'got ' + fmt(1500000));
+  assert('formatMMSS: 12:34',  fmt(754000)  === '12:34',  'got ' + fmt(754000));
+  assert('formatMMSS: 00:00',  fmt(0)       === '00:00',  'got ' + fmt(0));
+  assert('formatMMSS: negative clamps to 00:00', fmt(-999) === '00:00', 'got ' + fmt(-999));
+  assert('formatMMSS: 5:00',   fmt(300000)  === '05:00',  'got ' + fmt(300000));
+  assert('formatMMSS: 15:00',  fmt(900000)  === '15:00',  'got ' + fmt(900000));
+
+  // ── Full cycle sequence (FR-2, AC: 4th break is Long, then fresh cycle) ────
+
+  // Work 1 → Short Break
+  var n = ni('work', 1);
+  assert('Work1 → Short Break', n.intervalKind === 'short-break', n.intervalKind);
+  assert('Work1 → Short Break duration 5:00', n.durationMs === P.SHORT_MS, n.durationMs);
+  assert('Work1 → workCount unchanged', n.workCount === 1, n.workCount);
+
+  // Short Break → Work 2
+  n = ni('short-break', 1);
+  assert('Short Break → Work 2', n.intervalKind === 'work', n.intervalKind);
+  assert('Short Break → Work 2 workCount=2', n.workCount === 2, n.workCount);
+  assert('Short Break → Work 2 duration 25:00', n.durationMs === P.WORK_MS, n.durationMs);
+
+  // Work 2 → Short Break
+  n = ni('work', 2);
+  assert('Work2 → Short Break', n.intervalKind === 'short-break', n.intervalKind);
+
+  // Short Break → Work 3
+  n = ni('short-break', 2);
+  assert('Short Break → Work 3', n.intervalKind === 'work', n.intervalKind);
+  assert('Short Break → Work 3 workCount=3', n.workCount === 3, n.workCount);
+
+  // Work 3 → Short Break
+  n = ni('work', 3);
+  assert('Work3 → Short Break', n.intervalKind === 'short-break', n.intervalKind);
+
+  // Short Break → Work 4
+  n = ni('short-break', 3);
+  assert('Short Break → Work 4', n.intervalKind === 'work', n.intervalKind);
+  assert('Short Break → Work 4 workCount=4', n.workCount === 4, n.workCount);
+
+  // Work 4 → Long Break (the critical assertion)
+  n = ni('work', 4);
+  assert('Work4 → Long Break (not Short)', n.intervalKind === 'long-break', n.intervalKind);
+  assert('Work4 → Long Break duration 15:00', n.durationMs === P.LONG_MS, n.durationMs);
+  assert('Work4 → Long Break workCount=4', n.workCount === 4, n.workCount);
+
+  // Long Break → Work 1 of fresh cycle
+  n = ni('long-break', 4);
+  assert('Long Break → fresh Work 1', n.intervalKind === 'work', n.intervalKind);
+  assert('Long Break → fresh cycle workCount=1', n.workCount === 1, n.workCount);
+  assert('Long Break → fresh cycle duration 25:00', n.durationMs === P.WORK_MS, n.durationMs);
+
+  // ── Skip scenarios (FR-11: skipping Work still advances workCount) ──────────
+
+  // Skip Work1 — same as completing it; workCount stays at 1 for the transition
+  // (workCount is incremented on entry to work, so finishing work N = workCount N)
+  n = ni('work', 1);
+  assert('Skip Work1 → Short Break', n.intervalKind === 'short-break', n.intervalKind);
+
+  // Skip all 4 works: chain work→short→work→short→work→short→work
+  var wc = 1;
+  n = ni('work', wc);   // Work1 → ShortBreak
+  assert('Skip chain: Work1 → short-break', n.intervalKind === 'short-break', n.intervalKind);
+  n = ni('short-break', n.workCount); // → Work2
+  assert('Skip chain: short-break → Work2', n.workCount === 2, 'wc=' + n.workCount);
+  n = ni('work', n.workCount);  // Work2 → short-break
+  n = ni('short-break', n.workCount); // → Work3
+  assert('Skip chain: → Work3', n.workCount === 3, 'wc=' + n.workCount);
+  n = ni('work', n.workCount);  // Work3 → short-break
+  n = ni('short-break', n.workCount); // → Work4
+  assert('Skip chain: → Work4', n.workCount === 4, 'wc=' + n.workCount);
+  n = ni('work', n.workCount);  // Work4 → LongBreak
+  assert('Skip chain: Work4 → long-break', n.intervalKind === 'long-break', 'got ' + n.intervalKind);
+
+  // Skip from a Short Break: advances to next work without double-counting
+  n = ni('short-break', 2);
+  assert('Skip ShortBreak(2) → Work 3', n.intervalKind === 'work', n.intervalKind);
+  assert('Skip ShortBreak(2) → workCount=3', n.workCount === 3, n.workCount);
+
+  // Skip from Long Break: fresh cycle
+  n = ni('long-break', 4);
+  assert('Skip LongBreak → Work 1 fresh cycle', n.intervalKind === 'work', n.intervalKind);
+  assert('Skip LongBreak → workCount reset to 1', n.workCount === 1, n.workCount);
+
+  // ── Wall-clock / exactly-once transition (injectable _now seam) ────────────
+
+  // Reset to a known idle state, then simulate a timer run to zero via fake clock.
+  P.reset();
+  var fakeNow = Date.now();
+  P.setNow(function () { return fakeNow; });
+
+  // Use a very short duration for the test: override via start + manual endsAt injection
+  // We can't shorten WORK_MS, but we can set endsAt directly after start() via getState().
+  P.start();
+  var s = P.getState();
+  // Fake: endsAt is 1 second from fakeNow
+  s.endsAt = fakeNow + 1000;
+  s.remainingMs = 1000;
+
+  // Advance fake clock to just after endsAt
+  fakeNow = s.endsAt + 50;
+  P.tick(); // should call completeInterval exactly once and flip phase to 'idle'
+
+  var sAfter = P.getState();
+  assert('Exactly-once: phase not running after tick at zero', sAfter.phase !== 'running', 'phase=' + sAfter.phase);
+  assert('Exactly-once: phase is idle after completion', sAfter.phase === 'idle', 'phase=' + sAfter.phase);
+
+  // A second tick should NOT fire another transition (phase is idle now)
+  var kindBefore = sAfter.intervalKind;
+  P.tick(); // no-op because phase !== 'running'
+  assert('Exactly-once: second tick is no-op', P.getState().intervalKind === kindBefore, 'kind changed');
+
+  // Simulate a 5-minute background-tab jump: start, jump clock 5 min, tick once.
+  P.reset();
+  var T = Date.now();
+  P.setNow(function () { return T; });
+  P.start();
+  var st = P.getState();
+  st.endsAt = T + P.WORK_MS;  // 25 min from T
+  st.remainingMs = P.WORK_MS;
+
+  // Jump 5 minutes forward in one step (simulates throttled background tab)
+  T = T + 5 * 60 * 1000;
+  P.tick();
+  var remaining = P.getState().remainingMs;
+  var expected  = P.WORK_MS - 5 * 60 * 1000;
+  var tolerance = 1000; // 1s tolerance per spec NFR
+  assert(
+    'Background jump: remaining within 1s of wall-clock expectation',
+    Math.abs(remaining - expected) <= tolerance,
+    'remaining=' + remaining + ' expected=' + expected + ' diff=' + Math.abs(remaining - expected)
+  );
+
+  // Restore real clock
+  P.setNow(Date.now.bind(Date));
+  P.reset();
+
+  // ── Summary ─────────────────────────────────────────────────────────────────
+
+  var summary = document.getElementById('summary');
+  summary.textContent = pass + ' passed, ' + fail + ' failed.';
+  summary.className   = fail === 0 ? 'all-pass' : 'has-fail';
+  console.log('Pomodoro tests:', pass, 'passed,', fail, 'failed.');
+
+}());
+</script>
+</body>
+</html>
