@@ -34,10 +34,14 @@ Scale to the task — a tiny fix may skip research or even planning. Don't run s
 
 ## The requirements gate
 
-The pipeline **cannot proceed past requirements until every HIGH-impact assumption is resolved or explicitly accepted by the user.** When the requirements-engineer (or any stage) returns:
+The pipeline **cannot proceed past requirements until every open question — at any impact level — is resolved or explicitly accepted by the user.** This is a **loop, not a single round.** When the requirements-engineer (or any stage) returns:
 
 - **`NEEDS DECISION: <question>`** — ask the *user*, then **resume** that agent with the answer.
 - **`NEEDS RESEARCH: <question>`** — spawn the `researcher`, then **resume** that agent with the findings.
+
+Keep relaying question batches and resuming the requirements-engineer until it returns an **empty question set** (status `Ratified`). Answers often surface new questions — expect several rounds. **Do not advance to planning on a partial resolution.**
+
+**Escape hatch:** once only minor questions remain, offer the user "accept remaining defaults" each round; relaying that reply lets the engineer ratify with the current defaults recorded as accepted assumptions.
 
 Relay only the specific questions and the user's answers — never the full spec. The spec stays in its file; that's what keeps your context lean.
 
