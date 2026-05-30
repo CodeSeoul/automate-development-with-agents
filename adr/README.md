@@ -39,4 +39,5 @@ An ADR stays `Proposed` until a branch that implements it is ready to merge.
 
 | Date | Title | Status |
 |------|-------|--------|
-| _none yet_ | | |
+| 2026-05-30 | [Vanilla single-page app, no build step, file:// compatible](2026-05-30-vanilla-single-page-no-build.md) | Accepted |
+| 2026-05-30 | [Wall-clock-derived countdown instead of accumulated ticks](2026-05-30-walltime-drift-free-countdown.md) | Accepted |

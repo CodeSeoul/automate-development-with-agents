@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pomodoro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container" data-interval="work">
+    <h1 class="interval-label" id="interval-label">Work</h1>
+
+    <!--
+      role="timer" marks this as a live countdown region.
+      aria-live="off" keeps assistive tech quiet on every tick;
+      interval transitions are announced via the separate #announce region instead.
+    -->
+    <div
+      class="countdown"
+      id="countdown"
+      role="timer"
+      aria-label="Time remaining"
+      aria-live="off"
+    >25:00</div>
+
+    <!-- Polite live region used to announce interval transitions and end-of-interval events -->
+    <div
+      class="sr-only"
+      id="announce"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <div class="pomodoro-count" aria-live="polite" aria-atomic="true">
+      Pomodoros completed: <span id="pomodoro-count">0</span>
+    </div>
+
+    <div class="controls">
+      <!-- Single toggle covers Start / Pause / Resume (FR3) -->
+      <button id="btn-toggle" type="button" aria-pressed="false">Start</button>
+      <button id="btn-reset"  type="button">Reset</button>
+      <button id="btn-skip"   type="button">Skip</button>
+    </div>
+  </main>
+
+  <!-- Classic non-module script — required for file:// compatibility -->
+  <script src="app.js" defer></script>
+</body>
+</html>
