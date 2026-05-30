@@ -1,0 +1,145 @@
+/* System font stack — no external font fetch */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  transition: background 0.3s;
+}
+
+/* ── Interval theming via data-interval attribute ───────────────────────────
+   Color is a supplementary signal; the text label in #interval-label is the
+   primary, color-independent indicator (accessibility requirement).         */
+.container[data-interval="work"] {
+  --accent: #c0392b;
+  --accent-light: #fadbd8;
+  --accent-dark: #922b21;
+}
+
+.container[data-interval="shortBreak"] {
+  --accent: #27ae60;
+  --accent-light: #d5f5e3;
+  --accent-dark: #1e8449;
+}
+
+.container[data-interval="longBreak"] {
+  --accent: #2980b9;
+  --accent-light: #d6eaf8;
+  --accent-dark: #1f618d;
+}
+
+/* ── Container ──────────────────────────────────────────────────────────── */
+.container {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+  max-width: 420px;
+  width: 90%;
+  border-top: 6px solid var(--accent, #c0392b);
+  transition: border-color 0.3s;
+}
+
+/* ── Interval label ─────────────────────────────────────────────────────── */
+.interval-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent, #c0392b);
+  margin-bottom: 0.75rem;
+  transition: color 0.3s;
+}
+
+/* ── Countdown display ──────────────────────────────────────────────────── */
+.countdown {
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(3.5rem, 15vw, 6rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #1a1a1a;
+  margin: 0.25rem 0 1.25rem;
+  line-height: 1;
+}
+
+/* ── Completed pomodoro count ───────────────────────────────────────────── */
+.pomodoro-count {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 1.75rem;
+}
+
+.pomodoro-count span {
+  font-weight: 700;
+  color: var(--accent, #c0392b);
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 0.6rem 1.4rem;
+  border: 2px solid var(--accent, #c0392b);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--accent, #c0392b);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.3s;
+  min-width: 80px;
+}
+
+button:hover {
+  background: var(--accent, #c0392b);
+  color: #fff;
+}
+
+/* Primary toggle inherits full-fill style while running */
+#btn-toggle[aria-pressed="true"] {
+  background: var(--accent, #c0392b);
+  color: #fff;
+}
+
+/* Visible focus ring — keyboard navigation requirement */
+button:focus-visible {
+  outline: 3px solid var(--accent-dark, #922b21);
+  outline-offset: 3px;
+}
+
+/* ── End-of-interval visual flash ───────────────────────────────────────── */
+@keyframes flash-bg {
+  0%   { background: var(--accent-light, #fadbd8); }
+  50%  { background: var(--accent-light, #fadbd8); }
+  100% { background: #fff; }
+}
+
+.container.flash {
+  animation: flash-bg 0.8s ease-out forwards;
+}
+
+/* ── Screen-reader-only utility ─────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
