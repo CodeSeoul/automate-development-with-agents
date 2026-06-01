@@ -39,4 +39,4 @@ An ADR stays `Proposed` until a branch that implements it is ready to merge.
 
 | Date | Title | Status |
 |------|-------|--------|
-| _none yet_ | | |
+| 2026-05-30 | [Client-side timer logic, Python stdlib serves static files only](2026-05-30-client-side-timer-static-server.md) | Accepted |

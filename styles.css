@@ -1,0 +1,189 @@
+/* Pomodoro timer styles — system font stack, per-interval theming via data-interval,
+   no external fonts or CDN dependencies. Sized for a projector / live demo. */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Work: warm red */
+  --color-work-bg:      #c0392b;
+  --color-work-accent:  #e74c3c;
+  --color-work-text:    #ffffff;
+
+  /* Short break: calm teal */
+  --color-short-bg:     #16a085;
+  --color-short-accent: #1abc9c;
+  --color-short-text:   #ffffff;
+
+  /* Long break: deep blue */
+  --color-long-bg:      #2980b9;
+  --color-long-accent:  #3498db;
+  --color-long-text:    #ffffff;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+}
+
+/* Root app element — colour theme switches via data-interval attribute */
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 3rem 4rem;
+  border-radius: 1.5rem;
+  min-width: 380px;
+  text-align: center;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+#app[data-interval="work"] {
+  background-color: var(--color-work-bg);
+  color: var(--color-work-text);
+  box-shadow: 0 8px 40px rgba(192, 57, 43, 0.5);
+}
+
+#app[data-interval="short-break"] {
+  background-color: var(--color-short-bg);
+  color: var(--color-short-text);
+  box-shadow: 0 8px 40px rgba(22, 160, 133, 0.5);
+}
+
+#app[data-interval="long-break"] {
+  background-color: var(--color-long-bg);
+  color: var(--color-long-text);
+  box-shadow: 0 8px 40px rgba(41, 128, 185, 0.5);
+}
+
+/* Title */
+.app-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* Interval label */
+#interval-type {
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* Large countdown display */
+#time-remaining {
+  font-size: 6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* Cycle progress dots */
+#cycle-progress {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.dot.active {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.25);
+}
+
+.dot.completed {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+/* Controls */
+#controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#controls button {
+  padding: 0.65rem 1.4rem;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  min-width: 90px;
+}
+
+#controls button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+#controls button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+#controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Start / Resume button is visually prominent */
+#btn-start:not(:disabled) {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Screen-reader-only visually hidden utility — keeps aria-live content off screen */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Responsive: keep the card readable on smaller screens or projector views */
+@media (max-width: 480px) {
+  #app {
+    padding: 2rem 1.5rem;
+    min-width: 0;
+    width: 95vw;
+  }
+
+  #time-remaining {
+    font-size: 4.5rem;
+  }
+}
